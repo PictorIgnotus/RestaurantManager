@@ -1,6 +1,11 @@
 
 # Created by https://www.gitignore.io/api/windows,visualstudio
 
+doc/**
+*.pdf
+*.tex
+
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -316,10 +321,8 @@ __pycache__/
 
 #project ignorable folders/files
 bin/**
-doc/**
 obj/**
-*.pdf
-*.tex
+
 
 ### VisualStudio Patch ###
 # By default, sensitive information, such as encrypted password
