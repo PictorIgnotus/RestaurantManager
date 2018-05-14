@@ -1,0 +1,61 @@
+﻿@using Persistence
+@using System.Collections.Generic
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@model ProductsCategoriesViewModel
+
+<table>
+    <tr>
+        <td width="20%">
+            <table>
+                @foreach (Category cat in Model.CategoryList)
+                {
+                    <tr>
+                        <td>
+                            <a asp-controller="Home" asp-action="Categories" asp-route-id="@cat.Id">@cat.Name</a>
+                        </td>
+                    </tr>
+
+                 }
+            </table>
+        </td>
+        <td width="80%">
+            <h2>A vendégek kedvencei</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Név
+                        </th>
+                        <th>
+                            Ár
+                        </th>
+                        <th>
+                            Kosár
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Product product in Model.ProductList)
+                    {
+                        <tr>
+                            <td>
+                                @product.Name
+                            </td>
+                            <td>
+                                @product.Price.ToString("c")
+                            </td>
+                            <td>
+                                <a asp-controller="ShoppingCart" asp-action="AddToShoppingCart" asp-route-productid="@product.Id">Kosárba</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</table>

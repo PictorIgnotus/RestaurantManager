@@ -1,0 +1,96 @@
+﻿@using Persistence
+@using System.Collections.Generic
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Kosár";
+}
+
+@model ShoppingCartViewModel
+
+<table>
+    @if (Model.IsLimitReached)
+    { 
+        <tr>
+            <td>"Az elem nem helyezhető a kosárba, nincs már hely"</td>
+        </tr>
+    }
+    <tr>
+        <td width="80%">
+            <h2>A kosár tartalma</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Kiválasztott mennyiség
+                        </th>
+                        <th>
+                            Étel/Ital neve
+                        </th>
+                        <th>
+                            Ára
+                        </th>
+                        <th>
+                            Összesen
+                        </th>
+                        <th>
+                            Trölés
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in Model.ShoppingCart.ShoppingCartItems)
+                    {
+                    <tr>
+                        <td>
+                            @line.Amount
+                        </td>
+                        <td>
+                            @line.Item.Name
+                        </td>
+                        <td>
+                            @line.Item.Price.ToString("c")
+                        </td>
+                            
+                        <td>
+                            @((line.Amount * line.Item.Price).ToString("c"))
+                        </td>
+                        <td>
+                            <a asp-controller="ShoppingCart" asp-action="RemoveFromShoppingCart" asp-route-itemid="@line.Item.Id">Töröl</a>
+                        </td>
+                        <td></td>
+                    </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>
+                            A teljes ár:
+                        </td>
+                        <td>
+                            @Model.ShoppingCartTotal.ToString("c")
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @if (Model.ShoppingCartTotal != 0)
+                            {
+                                <a asp-controller="ShoppingCart" asp-action="OrderTransmission">Leadás</a>
+                            }
+                            else
+                            {
+                                <p>A kosár üres</p>
+                            }
+                        </td>
+                        <td>
+                            <a asp-controller="ShoppingCart" asp-action="ClearShoppingCart">Kosár kiürítése</a>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </td>
+    </tr>
+</table>
