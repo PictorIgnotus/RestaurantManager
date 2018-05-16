@@ -67,14 +67,21 @@ namespace RestaurantManager.Controllers
 
         public IActionResult Transmission(OrderViewModel viewmodel)
         {
+            
             Order order = new Order
             {
                 Name = viewmodel.OrdererName,
                 Address = viewmodel.OrdererAddress,
-                PhoneNumber = viewmodel.OrdererPhoneNumber,
-                ShoppingCartItems = shoppingCart.GetShoppingCartItems(),
+                PhoneNumber = viewmodel.OrdererPhoneNumber
             };
-            foreach(var item in order.ShoppingCartItems)
+
+            foreach (var item in shoppingCart.GetShoppingCartItems())
+            {
+                item.OrderId = order.Id;
+            }
+
+            order.ShoppingCartItems = shoppingCart.GetShoppingCartItems();
+            foreach (var item in order.ShoppingCartItems)
             {
                 var product = context.Products.SingleOrDefault(p => p.Id == item.Item.Id);
                 if (product != null)

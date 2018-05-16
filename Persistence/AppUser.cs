@@ -5,7 +5,8 @@ using System.Text;
 
 namespace Persistence
 {
-    public class AppUser : IdentityUser
+    public class AppUser : IdentityUser<int>
     {
+        public string Name { get; set; }
     }
 }

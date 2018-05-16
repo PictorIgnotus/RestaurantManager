@@ -38,75 +38,27 @@ namespace RestaurantManager.Models
 
         public void AddToCart(Product Item, int amount)
         {
-            var shoppingCartItem = context.ShoppingCartItems
-                .SingleOrDefault(s => s.Item.Id == Item.Id && s.ShoppingCartId == ShoppingCartId);
-            if (shoppingCartItem == null)
-            {
-                shoppingCartItem = new ShoppingCartItem
-                {
-                    ShoppingCartId = ShoppingCartId,
-                    Item = Item,
-                    Amount = 1,
-                };
-
-                context.ShoppingCartItems.Add(shoppingCartItem);
-            }
-            else
-            {
-                ++shoppingCartItem.Amount;
-            }
-            context.SaveChanges();
+            return;
         }
 
         public Int32 RemoveFromCart(Product Item)
         {
-            var shoppingCartItem = context.ShoppingCartItems
-                .SingleOrDefault(s => s.Item.Id == Item.Id && s.ShoppingCartId == ShoppingCartId);
-
-            var localAmount = 0;
-
-            if (shoppingCartItem != null)
-            {
-                if (shoppingCartItem.Amount > 1)
-                {
-                    shoppingCartItem.Amount--;
-                    localAmount = shoppingCartItem.Amount;
-                }
-                else
-                {
-                    context.ShoppingCartItems.Remove(shoppingCartItem);
-                }
-            }
-
-            context.SaveChanges();
-
-            return localAmount;
+            return 1;
         }
 
         public IList<ShoppingCartItem> GetShoppingCartItems()
         {
-            return ShoppingCartItems ??
-                (ShoppingCartItems =
-                    context.ShoppingCartItems.Where(s => s.ShoppingCartId == ShoppingCartId)
-                    .Include(c => c.Item)
-                    .ToList());
+            return null;
         }
 
         public void ClearCart()
         {
-            var cartItems = context.ShoppingCartItems
-                .Where(s => s.ShoppingCartId == ShoppingCartId);
-
-            context.ShoppingCartItems.RemoveRange(cartItems);
-
-            context.SaveChanges();
+            return;
         }
 
         public decimal GetShoppingCartTotal()
         {
-            var total = context.ShoppingCartItems.Where(s => s.ShoppingCartId == ShoppingCartId)
-                .Select(c => c.Item.Price * c.Amount).Sum();
-            return total;
+            return 0;
         }
 
         public Boolean IsLimitReached(Int32 price)

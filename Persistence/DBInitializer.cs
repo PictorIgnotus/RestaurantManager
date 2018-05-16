@@ -4,17 +4,21 @@ using Microsoft.AspNetCore.Builder;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.AspNetCore.Identity;
 
 namespace Persistence
 {
     public static class DBInitializer
     {
+        private static UserManager<AppUser> userManager;
+        private static RoleManager<IdentityRole<int>> roleManager;
         public static void Initialize(IApplicationBuilder app)
         {
             var ServiceScope = app.ApplicationServices.CreateScope();
             RestaurantContext context = ServiceScope.ServiceProvider.GetService<RestaurantContext>();
             context.Database.EnsureCreated();
+            userManager = ServiceScope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            roleManager = ServiceScope.ServiceProvider.GetRequiredService <RoleManager<IdentityRole<int>>>();
 
             // database already initialized
             if (context.Products.Any())
@@ -178,6 +182,78 @@ namespace Persistence
                 context.Products.Add(product);
 
             context.SaveChanges();
+
+            IList<Order> orderList = new List<Order>
+            {
+                new Order
+                {
+                    Name = "Alamfa",
+                    Address = "Almafa",
+                    PhoneNumber = "1234567",
+                    ShoppingCartItems = new List<ShoppingCartItem>()
+                    {
+                        new ShoppingCartItem {
+                            Amount = 3,
+                            ProductId = productsList[3].Id,
+                            Item = productsList[3],
+                        },
+                        new ShoppingCartItem {
+                            Amount = 2,
+                            ProductId = productsList[1].Id,
+                            Item = productsList[1],
+                        },
+                        new ShoppingCartItem {
+                            Amount = 1,
+                            ProductId = productsList[7].Id,
+                            Item = productsList[7],
+                        }
+                    },
+                    TransmittingDate = DateTime.Now.AddDays(10),
+                    CompletionDate = DateTime.Now.AddDays(3)
+                },
+                new Order
+                {
+                    Name = "Kortefa",
+                    Address = "Kortefa",
+                    PhoneNumber = "7654321",
+                    ShoppingCartItems = new List<ShoppingCartItem>()
+                    {
+                        new ShoppingCartItem {
+                            Amount = 1,
+                            ProductId = productsList[4].Id,
+                            Item = productsList[4],
+
+                        },
+                        new ShoppingCartItem {
+                            Amount = 2,
+                            ProductId = productsList[1].Id,
+                            Item = productsList[1],
+                        },
+                        new ShoppingCartItem {
+                            Amount = 1,
+                            ProductId = productsList[9].Id,
+                            Item = productsList[9],
+                        }
+                    },
+                    TransmittingDate = DateTime.Now.AddDays(4)
+                }
+            };
+
+            foreach (var order in orderList)
+                context.Orders.Add(order);
+
+            context.SaveChanges();
+
+            var adminUser = new AppUser
+            {
+                Name = "admin",
+            };
+            var adminPassword = "admin";
+            var adminRole = new IdentityRole<int>("administrator");
+
+            var result1 = userManager.CreateAsync(adminUser, adminPassword).Result;
+            var result2 = roleManager.CreateAsync(adminRole).Result;
+            var result3 = userManager.AddToRoleAsync(adminUser, adminRole.Name).Result;
         }
     }
 }
