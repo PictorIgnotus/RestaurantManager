@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
+using PersistenceManager;
 
 namespace Persistence
 {
@@ -208,8 +209,8 @@ namespace Persistence
                             Item = productsList[7],
                         }
                     },
-                    TransmittingDate = DateTime.Now.AddDays(10),
-                    CompletionDate = DateTime.Now.AddDays(3)
+                    TransmittingDate = DateTime.Now.AddDays(-10),
+                    CompletionDate = DateTime.Now.AddDays(-3)
                 },
                 new Order
                 {
@@ -235,7 +236,8 @@ namespace Persistence
                             Item = productsList[9],
                         }
                     },
-                    TransmittingDate = DateTime.Now.AddDays(4)
+                    TransmittingDate = DateTime.Now.AddDays(-4),
+                    CompletionDate = null
                 }
             };
 
@@ -246,9 +248,10 @@ namespace Persistence
 
             var adminUser = new AppUser
             {
-                Name = "admin",
+                UserName = "admin",
+                Email = "admin@admin.com"
             };
-            var adminPassword = "admin";
+            var adminPassword = "Admin123.";
             var adminRole = new IdentityRole<int>("administrator");
 
             var result1 = userManager.CreateAsync(adminUser, adminPassword).Result;

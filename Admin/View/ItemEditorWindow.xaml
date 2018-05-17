@@ -3,15 +3,30 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Admin.View"
+        xmlns:system="clr-namespace:System;assembly=mscorlib" 
+        xmlns:viewModel="clr-namespace:Admin.ViewModel"
         mc:Ignorable="d"
-        Title="Étterem manager - Bejelentkezés" Height="170.762" Width="461.801">
+        Title="Étterem manager - Bejelentkezés" Height="200." Width="461.801">
+    <Window.Resources>
+        <!-- erőforrások -->
+        <x:Array Type="system:String" x:Key="categoryTypeArray">
+            <system:String>Leves</system:String>
+            <system:String>Pizza</system:String>
+            <system:String>Hamburger</system:String>
+            <system:String>Sandwich</system:String>
+            <system:String>Kávé</system:String>
+            <system:String>Üdítő</system:String>
+        </x:Array>
+        <!-- átalakítók -->
+        <viewModel:CategoryTypeConverter x:Key="categoryTypeConverter" />
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
-                <RowDefinition Height="32" />
-                <RowDefinition Height="32" />
-                <RowDefinition Height="32" />
-                <RowDefinition Height="35" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="35" />
         </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="400" />
@@ -19,24 +34,28 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal">
-                <TextBlock Text="Név:" Margin="5" />
-                <TextBox Width="150" Margin="5"/>
+                <TextBlock Text="Név:" Margin="5"/>
+                <TextBox Width="150" Margin="5" Text="{Binding EditedProduct.Name}"/>
                 <TextBlock Text="Ár:" Margin="5" />
-                <TextBox Width="157" Margin="5" />
+                <TextBox Width="157" Margin="5" Text="{Binding EditedProduct.Price}"/>
             </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <TextBlock Text="Csipős:" Margin="5" />
-            <ComboBox Width="70"  Margin="5"/>
-            <TextBlock Text="Vegetáriánus:" Margin="5" />
-            <ComboBox Width="70" Margin="5"/>
+            <TextBlock Text="Kategória:" Margin="5" />
+            <ComboBox Width="130"  Margin="5" SelectedItem="{Binding EditedProduct.Category, Converter={StaticResource categoryTypeConverter}, ConverterParameter={StaticResource categoryTypeArray}}" ItemsSource="{StaticResource categoryTypeArray}"/>
         </StackPanel>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Grid.ColumnSpan="2">
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <CheckBox Content="Csipős" Margin="10,8,0,5" IsChecked="{Binding EditedProduct.Hot}"/>
+            <CheckBox Content="Vegetáriánus" Margin="30,8,0,5" IsChecked="{Binding EditedProduct.Vegetarian}"/>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Grid.ColumnSpan="2">
                 <TextBlock Text="Leírás:" Margin="5" />
-                <TextBox Width="315" Margin="5"/>
-            </StackPanel>
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Grid.ColumnSpan="2" HorizontalAlignment="Right">
-                <Button Content="Mentés" Margin="6,5,0,5" Width="100" />
-                <Button Content="Mégse" Margin="5,5,6,5"  Width="100" />
-            </StackPanel>
-        </Grid>
+                <TextBox Width="315" Margin="5" Text="{Binding EditedProduct.Description}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Grid.ColumnSpan="2" HorizontalAlignment="Right">
+            <Button Content="Mentés" Margin="6,5,0,5" Width="100" Command="{Binding SaveChangesCommand}"/>
+            <Button Content="Mégse" Margin="5,5,6,5"  Width="100" Command="{Binding CancelChangesCommand}"/>
+        </StackPanel>
+    </Grid>
 </Window>

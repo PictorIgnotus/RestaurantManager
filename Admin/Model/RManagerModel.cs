@@ -13,13 +13,15 @@ namespace Admin.Model
 
         private enum DataFlag
         {
-            Create
+            Create,
+            Update
         }
 
         private IRManagerPersistence persistence;
-        private List<ShoppingCartItemDTO> products;
+        private List<ProductDTO> products;
         private List<OrderDTO> orders;
-        private Dictionary<ShoppingCartItemDTO, DataFlag> productFlag;
+        private Dictionary<OrderDTO, DataFlag> orderFlags;
+        private Dictionary<ProductDTO, DataFlag> productFlags;
 
         public RManagerModel(IRManagerPersistence persistence)
         {
@@ -31,7 +33,7 @@ namespace Admin.Model
 
         public Boolean IsUserLoggedIn { get; private set; }
 
-        public IReadOnlyList<ShoppingCartItemDTO> Products
+        public IReadOnlyList<ProductDTO> Products
         {
             get { return products; }
         }
@@ -39,6 +41,8 @@ namespace Admin.Model
         {
             get { return orders; }
         }
+
+        public event EventHandler<OrderEventArgs> OrderChanged;
 
         public async Task<Boolean> LoginAsync(String userName, String userPassword)
         {
@@ -55,7 +59,7 @@ namespace Admin.Model
             return IsUserLoggedIn;
         }
 
-        public void CreateProduct(ShoppingCartItemDTO product)
+        public void CreateProduct(ProductDTO product)
         {
             if (product == null)
                 throw new ArgumentNullException(nameof(product));
@@ -63,14 +67,69 @@ namespace Admin.Model
                 throw new ArgumentException("The product is already in the collection.", nameof(product));
 
             product.Id = (products.Count > 0 ? products.Max(b => b.Id) : 0) + 1;
-            productFlag.Add(product, DataFlag.Create);
+            productFlags.Add(product, DataFlag.Create);
             products.Add(product);
 
+        }
+
+        public void CompleteOrder(OrderDTO order)
+        {
+            if (order == null)
+                throw new ArgumentNullException(nameof(order));
+
+            OrderDTO orderToModify = orders.FirstOrDefault(o => o.Id == order.Id);
+
+            if (orderToModify == null)
+                throw new ArgumentException("The order does not exist.", nameof(order));
+
+            orderToModify.CompletionDate = new DateTime();
+            orderToModify.CompletionDate = DateTime.Now;
+
+            orderFlags.Add(order, DataFlag.Update);
+
+            OnOrderComplete(order.Id);
         }
 
         public async Task LoadAsync()
         {
             products = (await persistence.ReadProductsAsync()).ToList();
+            orders = (await persistence.ReadOrdersAsync()).ToList();
+
+            orderFlags = new Dictionary<OrderDTO, DataFlag>();
+            productFlags = new Dictionary<ProductDTO, DataFlag>();
+        }
+
+        public async Task SaveAsync()
+        {
+            List<ProductDTO> productsToSave = productFlags.Keys.ToList();
+
+            foreach(ProductDTO product in productsToSave)
+            {
+                Boolean result = await persistence.CreateProductAsync(product); ;
+
+                if (!result)
+                    throw new InvalidOperationException("Operation " + productFlags[product] + " failed on product " + product.Id);
+
+                productFlags.Remove(product);
+            }
+
+            List<OrderDTO> ordersToSave = orderFlags.Keys.ToList();
+
+            foreach(OrderDTO order in ordersToSave)
+            {
+                Boolean result = await persistence.UpdateOrderAsync(order); ;
+
+                if (!result)
+                    throw new InvalidOperationException("Operation " + orderFlags[order] + " failed on product " + order.Id);
+
+                orderFlags.Remove(order);
+            }
+        }
+
+        private void OnOrderComplete(Int32 orderId)
+        {
+            if (OrderChanged != null)
+                OrderChanged(this, new OrderEventArgs { OrderId = orderId });
         }
     }
 }

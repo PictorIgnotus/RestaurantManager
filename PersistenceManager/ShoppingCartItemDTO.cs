@@ -11,5 +11,7 @@ namespace PersistenceManager
         public String Name { get; set; }
 
         public Int32 Price { get; set; }
+
+        public Int32 Amount { get; set; }
     }
 }

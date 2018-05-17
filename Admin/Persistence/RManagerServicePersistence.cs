@@ -44,14 +44,14 @@ namespace Admin.Persistence
             }
         }
 
-        public async Task<IEnumerable<ShoppingCartItemDTO>> ReadProductsAsync()
+        public async Task<IEnumerable<ProductDTO>> ReadProductsAsync()
         {
             try
             {
-                HttpResponseMessage response = await client.GetAsync("api/buildings/");
+                HttpResponseMessage response = await client.GetAsync("api/products/");
                 if(response.IsSuccessStatusCode)
                 {
-                    IEnumerable<ShoppingCartItemDTO> products = await response.Content.ReadAsAsync<IEnumerable<ShoppingCartItemDTO>>();
+                    IEnumerable<ProductDTO> products = await response.Content.ReadAsAsync<IEnumerable<ProductDTO>>();
 
                     return products;
                 }
@@ -73,7 +73,8 @@ namespace Admin.Persistence
                 HttpResponseMessage response = await client.GetAsync("api/orders/");
                 if (response.IsSuccessStatusCode)
                 {
-                    return await response.Content.ReadAsAsync<IEnumerable<OrderDTO>>();
+                    IEnumerable<OrderDTO> orders = await response.Content.ReadAsAsync<IEnumerable<OrderDTO>>();
+                    return orders;
                 }
                 else
                 {
@@ -86,12 +87,25 @@ namespace Admin.Persistence
             }
         }
 
-        public async Task<Boolean> CreateProductAsync(ShoppingCartItemDTO product)
+        public async Task<Boolean> CreateProductAsync(ProductDTO product)
         {
             try
             {
                 HttpResponseMessage response = await client.PostAsJsonAsync("api/products/", product);
                 product.Id = (await response.Content.ReadAsAsync<ShoppingCartItemDTO>()).Id;
+                return response.IsSuccessStatusCode;
+            }
+            catch(Exception ex)
+            {
+                throw new PersistenceUnavailableException(ex);
+            }
+        }
+
+        public async Task<Boolean> UpdateOrderAsync(OrderDTO order)
+        {
+            try
+            {
+                HttpResponseMessage response = await client.PutAsJsonAsync("api/orders/", order);
                 return response.IsSuccessStatusCode;
             }
             catch(Exception ex)

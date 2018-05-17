@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
@@ -38,16 +39,38 @@ namespace RestaurantManager.Controllers
                     Name = order.Name,
                     Address = order.Address,
                     PhoneNumber = order.PhoneNumber,
+                    Price = 0,
                     Items = context.ShoppingCartItems.ToList().Where(sh => sh.OrderId == order.Id)
                         .Select(sh => new ShoppingCartItemDTO
                         {
                             Id = sh.Id,
                             Name = context.Products.Where(p => p.Id == sh.ProductId).Select(p => p.Name).FirstOrDefault(),
                             Price = context.Products.Where(p => p.Id == sh.ProductId).Select(p => p.Price).Sum(),
+                            Amount = sh.Amount,
                         }),
-                    CompletionDate = new DateTime(),
-                    TransmittingDate = new DateTime()
+                    CompletionDate = order.CompletionDate,
+                    TransmittingDate = order.TransmittingDate
                 }));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpPut]
+        [Authorize(Roles="administrator")]
+        public IActionResult PutOrder([FromBody] OrderDTO orderDTO)
+        {
+            try
+            {
+                Order order = context.Orders.FirstOrDefault(o => o.Id == orderDTO.Id);
+
+                order.CompletionDate = orderDTO.CompletionDate;
+
+                context.SaveChanges();
+
+                return Ok();
             }
             catch
             {

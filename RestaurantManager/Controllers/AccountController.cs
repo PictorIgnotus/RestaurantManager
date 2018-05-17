@@ -19,6 +19,12 @@ namespace RestaurantManager.Controllers
             this.signInManager = signInManager;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> DoNothing()
+        {
+            return StatusCode(StatusCodes.Status100Continue);
+        }
+
         [HttpGet("login/{username}/{userPassword}")]
         public async Task<IActionResult> Login(String userName, String userPassword)
         {

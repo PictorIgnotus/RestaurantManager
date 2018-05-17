@@ -1,13 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace Persistence
 {
-    public class RestaurantContext : DbContext
+    public class RestaurantContext : IdentityDbContext<AppUser, IdentityRole<int>, int>
     {
         public RestaurantContext(DbContextOptions<RestaurantContext> options)
             : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.Entity<AppUser>().ToTable("AppUsers");
         }
 
         public DbSet<Category> Categories { get; set; }

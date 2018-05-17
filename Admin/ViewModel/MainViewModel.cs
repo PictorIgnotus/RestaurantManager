@@ -1,4 +1,5 @@
 ﻿using Admin.Model;
+using Admin.Persistence;
 using PersistenceManager;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,8 @@ namespace Admin.ViewModel
     {
         private IRManagerModel model;
         private ObservableCollection<OrderDTO> orders;
-        private ObservableCollection<ShoppingCartItemDTO> products;
+        private ObservableCollection<ShoppingCartItemDTO> items;
+        private ObservableCollection<ProductDTO> products;
         private OrderDTO selectedOrder;
         private Boolean isLoaded;
 
@@ -30,7 +32,20 @@ namespace Admin.ViewModel
             }
         }
 
-        public ObservableCollection<ShoppingCartItemDTO> Products
+        public ObservableCollection<ShoppingCartItemDTO> Items
+        {
+            get { return items; }
+            private set
+            {
+                if(items != value)
+                {
+                    items = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ObservableCollection<ProductDTO> Products
         {
             get { return products; }
             private set
@@ -81,6 +96,9 @@ namespace Admin.ViewModel
 
         public DelegateCommand CancelChangesCommand { get; private set; }
 
+        public DelegateCommand LoadCommand { get; private set; }
+
+        public DelegateCommand SaveCommand { get; private set; }
 
         public event EventHandler ExitApplication;
 
@@ -93,6 +111,7 @@ namespace Admin.ViewModel
             if (model == null)
                 throw new ArgumentNullException("model");
             this.model = model;
+            this.model.OrderChanged += Model_OrderChanged;
             isLoaded = false;
 
             CreateProductCommand = new DelegateCommand(param =>
@@ -100,10 +119,23 @@ namespace Admin.ViewModel
                 EditedProduct = new ProductDTO();
                 OnProductEditingStarted();
             });
+            CompleteOrderCommand = new DelegateCommand(param => CompleteOrder(param as OrderDTO));
 
             SaveChangesCommand = new DelegateCommand(param => SaveChanges());
             CancelChangesCommand = new DelegateCommand(param => CancelChanges());
             ExitCommand = new DelegateCommand(param => OnExitApplication());
+            LoadCommand = new DelegateCommand(param => LoadAsync());
+            SaveCommand = new DelegateCommand(param => SaveAsync());
+        }
+
+        public void CompleteOrder(OrderDTO order)
+        {
+            if (order == null)
+                return;
+            if (order.CompletionDate != null)
+                return;
+
+            model.CompleteOrder(order);
         }
 
         public void SaveChanges()
@@ -127,8 +159,19 @@ namespace Admin.ViewModel
                     return;
                 }
             }
-            OnProductEditingFinished();
+            else
+            {
+                if(!String.IsNullOrEmpty(EditedProduct.Description))
+                {
+                    OnMessageApplication("Italokhoz nincs leírás");
+                    return;
+                }
+            }
 
+            model.CreateProduct(EditedProduct);
+            Products.Add(EditedProduct);
+
+            OnProductEditingFinished();
         }
 
         public void CancelChanges()
@@ -152,7 +195,52 @@ namespace Admin.ViewModel
         private void OnProductEditingFinished()
         {
             if (ProductEditingFinished != null)
-                ProductEditingStarted(this, EventArgs.Empty);
+                ProductEditingFinished(this, EventArgs.Empty);
+        }
+
+        private async void LoadAsync()
+        {
+            try
+            {
+                await model.LoadAsync();
+                Orders = new ObservableCollection<OrderDTO>(model.Orders); // az adatokat egy követett gyűjteménybe helyezzük
+                foreach(OrderDTO order in Orders)
+                {
+                    foreach(var item in order.Items)
+                    {
+                        order.Price += item.Price * item.Amount; 
+                    }
+                }
+                Products = new ObservableCollection<ProductDTO>(model.Products);
+                IsLoaded = true;
+            }
+            catch (PersistenceUnavailableException)
+            {
+                OnMessageApplication("A betöltés sikertelen! Nincs kapcsolat a kiszolgálóval.");
+            }
+        }
+
+        private async void SaveAsync()
+        {
+            try
+            {
+                await model.SaveAsync();
+                OnMessageApplication("A mentés sikeres!");
+            }
+            catch(PersistenceUnavailableException)
+            {
+                OnMessageApplication("A mentés sikertelen! Nincs kapcsolat a kiszolgálóval.");
+            }
+        }
+
+        private void Model_OrderChanged(object sender, OrderEventArgs e)
+        {
+            Int32 index = Orders.IndexOf(Orders.FirstOrDefault(order => order.Id == e.OrderId));
+
+            Orders.RemoveAt(index);
+            Orders.Insert(index, model.Orders[index]);
+
+            SelectedOrder = Orders[index];
         }
     }
 }

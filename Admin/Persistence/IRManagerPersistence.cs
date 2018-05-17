@@ -13,8 +13,12 @@ namespace Admin.Persistence
 
         Task<Boolean> LogoutAsync();
 
-        Task<IEnumerable<ShoppingCartItemDTO>> ReadProductsAsync();
+        Task<IEnumerable<ProductDTO>> ReadProductsAsync();
 
         Task<IEnumerable<OrderDTO>> ReadOrdersAsync();
+
+        Task<Boolean> CreateProductAsync(ProductDTO product);
+
+        Task<Boolean> UpdateOrderAsync(OrderDTO order);
     }
 }
