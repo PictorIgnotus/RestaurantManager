@@ -19,6 +19,8 @@
         </x:Array>
         <!-- átalakítók -->
         <viewModel:CategoryTypeConverter x:Key="categoryTypeConverter" />
+        <viewModel:CategoryBooleanConverter x:Key="categoryBooleanConverter" />
+        <viewModel:PriceConverter x:Key="priceConverter" />
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -35,26 +37,26 @@
 
             <StackPanel Grid.Row="0" Orientation="Horizontal">
                 <TextBlock Text="Név:" Margin="5"/>
-                <TextBox Width="150" Margin="5" Text="{Binding EditedProduct.Name}"/>
-                <TextBlock Text="Ár:" Margin="5" />
-                <TextBox Width="157" Margin="5" Text="{Binding EditedProduct.Price}"/>
+            <TextBox Width="150" Margin="5" Text="{Binding EditedProduct.Name}"/>
+            <TextBlock Text="Ár:" Margin="5" />
+                <TextBox Width="157" Margin="5" Text="{Binding EditedProduct.Price, Converter={StaticResource priceConverter}}"/>
             </StackPanel>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
             <TextBlock Text="Kategória:" Margin="5" />
-            <ComboBox Width="130"  Margin="5" SelectedItem="{Binding EditedProduct.Category, Converter={StaticResource categoryTypeConverter}, ConverterParameter={StaticResource categoryTypeArray}}" ItemsSource="{StaticResource categoryTypeArray}"/>
+            <ComboBox x:Name="CategoryComboBox" Width="130"  Margin="5" SelectedItem="{Binding EditedProduct.Category, Converter={StaticResource categoryTypeConverter}, ConverterParameter={StaticResource categoryTypeArray}}" ItemsSource="{StaticResource categoryTypeArray}"/>
         </StackPanel>
-        
-        <StackPanel Grid.Row="2" Orientation="Horizontal">
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Visibility="{Binding ElementName=CategoryComboBox, Path=SelectedItem, Converter={StaticResource categoryBooleanConverter}, ConverterParameter={StaticResource categoryTypeArray}}">
             <CheckBox Content="Csipős" Margin="10,8,0,5" IsChecked="{Binding EditedProduct.Hot}"/>
             <CheckBox Content="Vegetáriánus" Margin="30,8,0,5" IsChecked="{Binding EditedProduct.Vegetarian}"/>
         </StackPanel>
-        
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Grid.ColumnSpan="2">
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Grid.ColumnSpan="2" Visibility="{Binding ElementName=CategoryComboBox, Path=SelectedItem, Converter={StaticResource categoryBooleanConverter}, ConverterParameter={StaticResource categoryTypeArray}}">
                 <TextBlock Text="Leírás:" Margin="5" />
                 <TextBox Width="315" Margin="5" Text="{Binding EditedProduct.Description}"/>
         </StackPanel>
         <StackPanel Grid.Row="4" Orientation="Horizontal" Grid.ColumnSpan="2" HorizontalAlignment="Right">
-            <Button Content="Mentés" Margin="6,5,0,5" Width="100" Command="{Binding SaveChangesCommand}"/>
+            <Button Content="Mentés" Margin="6,5,0,5" Width="100" Command="{Binding SaveChangesCommand}" />
             <Button Content="Mégse" Margin="5,5,6,5"  Width="100" Command="{Binding CancelChangesCommand}"/>
         </StackPanel>
     </Grid>

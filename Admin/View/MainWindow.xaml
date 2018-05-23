@@ -10,41 +10,41 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25" />
-            <RowDefinition Height="25"/>
+            <RowDefinition Height="35"/>
             <RowDefinition Height="2*" />
             <RowDefinition Height="35" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="400" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
 
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
             <MenuItem Header="Adatbázis">
                 <MenuItem Header="Rendelések lekérdezése" Command="{Binding LoadCommand}"/>
                 <MenuItem Header="Adatok mentése" Command="{Binding SaveCommand}"/>
+                <MenuItem Header="Kijelentkezés" Command="{Binding LogoutCommand}"/>
                 <Separator />
                 <MenuItem Header="Kilépés" Command="{Binding ExitCommand}" />
             </MenuItem>
         </Menu>
         
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <CheckBox Content="Leadott rendelések" Margin="6,5,0,5"/>
-            <CheckBox Content="Teljesített rendelések" Margin="6,5,0,5"/>
+            <CheckBox Content="Leadott rendelések" Margin="6,5,0,5" IsChecked="{Binding TransmittedOrders}"/>
+            <CheckBox Content="Teljesített rendelések" Margin="6,5,0,5" IsChecked="{Binding CompletedOrders}"/>
             <Label Content="Név:" Margin="6,0,0,0"/>
-            <TextBox TextWrapping="Wrap" Text="TextBox" Width="120" Margin="6,5,0,5"/>
+            <TextBox TextWrapping="Wrap" Text="{Binding FilterName}" Width="100" Margin="6,5,0,5"/>
+            <Label Content="Cím:" Margin="6,0,0,0"/>
+            <TextBox TextWrapping="Wrap" Text="{Binding FilterAddress}" Width="100" Margin="6,5,0,5"/>
+            <Button Content="Szűrés" Margin="6,5,0,5" Width="60" Command="{Binding FilterOrdersCommand}" IsEnabled="{Binding IsLoaded}"/>
         </StackPanel>
         
         
         <DataGrid Name="productGrid" Grid.Row="2" Grid.ColumnSpan="2" AutoGenerateColumns="False" IsReadOnly="True" ItemsSource="{Binding Orders}" SelectedItem="{Binding SelectedOrder}">
             <!-- adatrács, amelynek megadjuk az oszlopait -->
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Leadás időpontja" Binding="{Binding TransmittingDate}"/>
-                <DataGridTextColumn Header="Teljesítés időpontja" Binding="{Binding CompletionDate}"/>
-                <DataGridTextColumn Header="Név" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="Leadás időpontja" Binding="{Binding TransmittingDate}" Width="110"/>
+                <DataGridTextColumn Header="Teljesítés időpontja" Binding="{Binding CompletionDate}" Width="110"/>
+                <DataGridTextColumn Header="Név" Binding="{Binding Name}" Width="130"/>
                 <!-- konverziót használunk a tengerpart távolságra -->
-                <DataGridTextColumn Header="Cím" Binding="{Binding Address}"/>
+                <DataGridTextColumn Header="Cím" Binding="{Binding Address}" Width="130"/>
                 <!-- paraméterben adjuk meg a tengerpart típusokat -->
                 <DataGridTextColumn Header="Telefonszám" Binding="{Binding PhoneNumber}"/>
                 <DataGridTextColumn Header="Összeg" Binding="{Binding Price}"/>
@@ -53,7 +53,7 @@
 
         <StackPanel Grid.Row="3" Orientation="Horizontal">
             <Button Content="Új termék hozzáadása" Margin="6,5,0,5" Width="114" Command="{Binding CreateProductCommand}" IsEnabled="{Binding IsLoaded}"/>
-            <Button Content="Kijelölt teljesítése" Margin="6,5,0,5" Width="114" Command="{Binding CompleteOrderCommand}" CommandParameter="{Binding SelectedOrder}" IsEnabled="{Binding IsLoaded}"/>
+            <Button Content="Kijelölt teljesítése" Margin="6,5,0,5" Width="114" Command="{Binding CompleteOrderCommand}" IsEnabled="{Binding JustTransmitted}" CommandParameter="{Binding SelectedOrder}"/>
         </StackPanel>
 
         <DataGrid Name="biddingGrid" Grid.Row="4" AutoGenerateColumns="False" IsReadOnly="True" ItemsSource="{Binding ElementName=productGrid, Path=SelectedItem.Items}"  Grid.ColumnSpan="2" Margin="0,0,0.333,0">

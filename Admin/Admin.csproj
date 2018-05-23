@@ -67,7 +67,11 @@
     <Compile Include="Persistence\IRManagerPersistence.cs" />
     <Compile Include="Persistence\PersistenceUnavailableException.cs" />
     <Compile Include="Persistence\RManagerServicePersistence.cs" />
+    <Compile Include="ViewModel\Converters\CategoryBooleanConverter.cs" />
     <Compile Include="ViewModel\Converters\CategoryTypeConverter.cs" />
+    <Compile Include="ViewModel\Converters\NameColorConverter.cs" />
+    <Compile Include="ViewModel\Converters\NegateConverter.cs" />
+    <Compile Include="ViewModel\Converters\PriceConverter.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\LoginViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />

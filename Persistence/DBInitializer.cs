@@ -238,7 +238,68 @@ namespace Persistence
                     },
                     TransmittingDate = DateTime.Now.AddDays(-4),
                     CompletionDate = null
-                }
+                },
+                new Order
+                {
+                    Name = "Meggyfa",
+                    Address = "Meggyfa",
+                    PhoneNumber = "1234567",
+                    ShoppingCartItems = new List<ShoppingCartItem>()
+                    {
+                        new ShoppingCartItem {
+                            Amount = 1,
+                            ProductId = productsList[7].Id,
+                            Item = productsList[7],
+                        },
+                        new ShoppingCartItem {
+                            Amount = 6,
+                            ProductId = productsList[14].Id,
+                            Item = productsList[14],
+                        },
+                    },
+                    TransmittingDate = DateTime.Now.AddDays(-1),
+                },
+                new Order
+                {
+                    Name = "Csersznyefa",
+                    Address = "Cseresznyefa",
+                    PhoneNumber = "434324324",
+                    ShoppingCartItems = new List<ShoppingCartItem>()
+                    {
+                        new ShoppingCartItem {
+                            Amount = 5,
+                            ProductId = productsList[0].Id,
+                            Item = productsList[0],
+                        }
+                    },
+                    TransmittingDate = DateTime.Now.AddDays(-13),
+                    CompletionDate = DateTime.Now.AddDays(-10)
+                },
+                new Order
+                {
+                    Name = "Barackfa",
+                    Address = "Barackfa",
+                    PhoneNumber = "41343242",
+                    ShoppingCartItems = new List<ShoppingCartItem>()
+                    {
+                        new ShoppingCartItem {
+                            Amount = 4,
+                            ProductId = productsList[16].Id,
+                            Item = productsList[16],
+                        },
+                        new ShoppingCartItem {
+                            Amount = 1,
+                            ProductId = productsList[5].Id,
+                            Item = productsList[5],
+                        },
+                        new ShoppingCartItem {
+                            Amount = 3,
+                            ProductId = productsList[10].Id,
+                            Item = productsList[10],
+                        }
+                    },
+                    TransmittingDate = DateTime.Now.AddDays(-2),
+                },
             };
 
             foreach (var order in orderList)

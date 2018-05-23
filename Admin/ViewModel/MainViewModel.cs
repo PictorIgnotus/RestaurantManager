@@ -4,9 +4,11 @@ using PersistenceManager;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace Admin.ViewModel
 {
@@ -14,32 +16,24 @@ namespace Admin.ViewModel
     {
         private IRManagerModel model;
         private ObservableCollection<OrderDTO> orders;
-        private ObservableCollection<ShoppingCartItemDTO> items;
+        private ObservableCollection<OrderDTO> filteredOrders;
         private ObservableCollection<ProductDTO> products;
         private OrderDTO selectedOrder;
         private Boolean isLoaded;
+        private Boolean justTransmitted;
+        private String filterName;
+        private String filterAddress;
+        private Boolean completedOrders;
+        private Boolean transmittedOrders;
 
         public ObservableCollection<OrderDTO> Orders
         {
-            get { return orders; }
+            get { return filteredOrders; }
             private set
             {
-                if (orders != value)
+                if (filteredOrders != value)
                 {
-                    orders = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public ObservableCollection<ShoppingCartItemDTO> Items
-        {
-            get { return items; }
-            private set
-            {
-                if(items != value)
-                {
-                    items = value;
+                    filteredOrders = value;
                     OnPropertyChanged();
                 }
             }
@@ -79,22 +73,90 @@ namespace Admin.ViewModel
                 if (selectedOrder != value)
                 {
                     selectedOrder = value;
+                    JustTransmitted = selectedOrder == null ? false : selectedOrder.CompletionDate == null;
                     OnPropertyChanged();
                 }
             }
         }
 
-        public ProductDTO EditedProduct { get; private set; }
+        public String FilterName
+        {
+            get { return filterName; }
+            set
+            {
+                if(filterName != value)
+                {
+                    filterName = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public String FilterAddress
+        {
+            get { return filterAddress; }
+            set
+            {
+                if (filterAddress != value)
+                {
+                    filterAddress = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public Boolean JustTransmitted
+        {
+            get { return justTransmitted; }
+            private set
+            {
+                if (justTransmitted != value)
+                {
+                    justTransmitted = value;
+                    OnPropertyChanged();
+                }            }
+        }
+
+        public Boolean CompletedOrders
+        {
+            get { return completedOrders; }
+            set
+            {
+                if (completedOrders != value)
+                {
+                    completedOrders = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public Boolean TransmittedOrders
+        {
+            get { return transmittedOrders; }
+            set
+            {
+                if (transmittedOrders != value)
+                {
+                    transmittedOrders = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ProductDTO EditedProduct{ get; private set; }
 
         public DelegateCommand CreateProductCommand {get; private set;}
 
         public DelegateCommand CompleteOrderCommand { get; private set; }
+
+        public DelegateCommand LogoutCommand { get; private set; }
 
         public DelegateCommand ExitCommand { get; private set; }
 
         public DelegateCommand SaveChangesCommand { get; private set; }
 
         public DelegateCommand CancelChangesCommand { get; private set; }
+
+        public DelegateCommand FilterOrdersCommand { get; private set; }
 
         public DelegateCommand LoadCommand { get; private set; }
 
@@ -106,6 +168,9 @@ namespace Admin.ViewModel
 
         public event EventHandler ProductEditingFinished;
 
+        public event EventHandler LogoutSuccess;
+        public event EventHandler LogoutFailed;
+
         public MainViewModel(IRManagerModel model)
         {
             if (model == null)
@@ -113,6 +178,11 @@ namespace Admin.ViewModel
             this.model = model;
             this.model.OrderChanged += Model_OrderChanged;
             isLoaded = false;
+            justTransmitted = false;
+            filterName = "";
+            filterAddress = "";
+            completedOrders = false;
+            transmittedOrders = false;
 
             CreateProductCommand = new DelegateCommand(param =>
             {
@@ -123,9 +193,63 @@ namespace Admin.ViewModel
 
             SaveChangesCommand = new DelegateCommand(param => SaveChanges());
             CancelChangesCommand = new DelegateCommand(param => CancelChanges());
+            FilterOrdersCommand = new DelegateCommand(param => FilterOrders());
+
+            LogoutCommand = new DelegateCommand(param => LogoutAsync());
             ExitCommand = new DelegateCommand(param => OnExitApplication());
             LoadCommand = new DelegateCommand(param => LoadAsync());
             SaveCommand = new DelegateCommand(param => SaveAsync());
+        }
+
+        private async void LogoutAsync()
+        {
+            try
+            {
+                Boolean result = await model.LogoutAsync();
+
+                if (result)
+                    OnLogoutSuccces();
+                else
+                    OnLogoutFailed();
+            }catch (PersistenceUnavailableException)
+            {
+                OnMessageApplication("Nincs kapcsolat a szerverrel!");
+            }
+        }
+
+        private void OnLogoutFailed()
+        {
+            if (LogoutFailed != null)
+                LogoutFailed(this, EventArgs.Empty);
+        }
+
+        private void OnLogoutSuccces()
+        {
+            if (LogoutSuccess != null)
+                LogoutSuccess(this, EventArgs.Empty);
+        }
+
+        private void FilterOrders()
+        {
+            Orders.Clear();
+            foreach(var order in orders)
+            {
+                if (order.Name.ToUpper().Contains(FilterName.ToUpper()) && order.Address.ToUpper().Contains(FilterAddress.ToUpper()))
+                {
+                    if (CompletedOrders && TransmittedOrders || !(CompletedOrders || TransmittedOrders))
+                    {
+                        Orders.Add(order);
+                    }
+                    else if(CompletedOrders && order.CompletionDate != null)
+                    {
+                       Orders.Add(order);
+                    }
+                    else if(TransmittedOrders && order.CompletionDate == null)
+                    {
+                        Orders.Add(order);
+                    }
+                }
+            }
         }
 
         public void CompleteOrder(OrderDTO order)
@@ -142,12 +266,18 @@ namespace Admin.ViewModel
         {
             if(String.IsNullOrEmpty(EditedProduct.Name))
             {
-                OnMessageApplication("Az étel neve nincs megadva");
+                OnMessageApplication("A termék neve nincs megadva");
+                return;
+            }
+            var nameList = products.Select(p => p.Name).ToList();
+            if (nameList.Contains(EditedProduct.Name))
+            {
+                OnMessageApplication("Már van ilyen nevű termék!");
                 return;
             }
             if(String.IsNullOrEmpty(EditedProduct.Price.ToString()))
             {
-                OnMessageApplication("Az étel ára nincs megadva");
+                OnMessageApplication("A termék ára nincs megadva");
                 return;
             }
             
@@ -161,11 +291,9 @@ namespace Admin.ViewModel
             }
             else
             {
-                if(!String.IsNullOrEmpty(EditedProduct.Description))
-                {
-                    OnMessageApplication("Italokhoz nincs leírás");
-                    return;
-                }
+                EditedProduct.Hot = false;
+                EditedProduct.Vegetarian = false;
+                EditedProduct.Description = null;
             }
 
             model.CreateProduct(EditedProduct);
@@ -203,14 +331,15 @@ namespace Admin.ViewModel
             try
             {
                 await model.LoadAsync();
-                Orders = new ObservableCollection<OrderDTO>(model.Orders); // az adatokat egy követett gyűjteménybe helyezzük
-                foreach(OrderDTO order in Orders)
+                orders = new ObservableCollection<OrderDTO>(model.Orders); // az adatokat egy követett gyűjteménybe helyezzük
+                foreach(OrderDTO order in orders)
                 {
                     foreach(var item in order.Items)
                     {
                         order.Price += item.Price * item.Amount; 
                     }
                 }
+                Orders = new ObservableCollection<OrderDTO>(orders);
                 Products = new ObservableCollection<ProductDTO>(model.Products);
                 IsLoaded = true;
             }

@@ -105,7 +105,7 @@ namespace Admin.Model
 
             foreach(ProductDTO product in productsToSave)
             {
-                Boolean result = await persistence.CreateProductAsync(product); ;
+                Boolean result = await persistence.CreateProductAsync(product);
 
                 if (!result)
                     throw new InvalidOperationException("Operation " + productFlags[product] + " failed on product " + product.Id);
@@ -117,7 +117,7 @@ namespace Admin.Model
 
             foreach(OrderDTO order in ordersToSave)
             {
-                Boolean result = await persistence.UpdateOrderAsync(order); ;
+                Boolean result = await persistence.UpdateOrderAsync(order);
 
                 if (!result)
                     throw new InvalidOperationException("Operation " + orderFlags[order] + " failed on product " + order.Id);

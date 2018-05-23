@@ -6,6 +6,7 @@ using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 using PersistenceManager;
 
@@ -52,9 +53,47 @@ namespace RestaurantManager.Controllers
             }
         }
 
+
+        [HttpGet("{id}", Name = "GetProduct")]
+        public IActionResult GetProduct(Int32 id)
+        {
+            try
+            {
+                return Ok(context.Products.Where(p => p.Id == id).Select(product => new ProductDTO
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    Category = product.Category,
+                    Price = product.Price,
+                    Hot = product.Hot,
+                    Vegetarian = product.Vegetarian,
+                    Description = product.Description,
+                    SaleNumber = product.SaleNumber
+                }).Single());
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        /*[HttpPost]
+        public IActionResult PostSg()
+        {
+            try
+            {
+                return Ok();
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }*/
+
+
         [HttpPost]
-        [Authorize(Roles="administrator")]
-        public IActionResult PostBuilding([FromBody] ProductDTO productDTO)
+        //[Authorize(Roles = "administrator")]
+        public IActionResult PostProduct([FromBody] ProductDTO productDTO)
         {
             try
             {
@@ -73,7 +112,7 @@ namespace RestaurantManager.Controllers
 
                 productDTO.Id = addedProduct.Entity.Id;
 
-                return Created(Request.GetUri() + addedProduct.Entity.Id.ToString(), productDTO);
+                return CreatedAtRoute("GetProduct", new { id = addedProduct.Entity.Id }, productDTO);
             }
             catch
             {

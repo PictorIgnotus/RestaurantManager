@@ -52,19 +52,22 @@ namespace RestaurantManager.Controllers
                     TransmittingDate = order.TransmittingDate
                 }));
             }
-            catch (Exception ex)
+            catch
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
         [HttpPut]
-        [Authorize(Roles="administrator")]
+        //[Authorize(Roles="administrator")]
         public IActionResult PutOrder([FromBody] OrderDTO orderDTO)
         {
             try
             {
                 Order order = context.Orders.FirstOrDefault(o => o.Id == orderDTO.Id);
+
+                if (order == null)
+                    return NotFound();
 
                 order.CompletionDate = orderDTO.CompletionDate;
 

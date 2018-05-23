@@ -56,12 +56,32 @@ namespace Admin
             mainViewModel.ProductEditingStarted += new EventHandler(MainViewModel_ProductEditingStarted);
             mainViewModel.ProductEditingFinished += new EventHandler(MainViewModel_ProductEditingFinished);
             mainViewModel.ExitApplication += new EventHandler(ViewModel_ExitApplication);
+            mainViewModel.LogoutSuccess += new EventHandler(ViewModel_LogoutSuccess);
+            mainViewModel.LogoutFailed += new EventHandler(ViewModel_LogoutFailed);
 
             mainView = new MainWindow();
             mainView.DataContext = mainViewModel;
             mainView.Show();
 
             loginView.Close();
+        }
+
+        private void ViewModel_LogoutFailed(object sender, EventArgs e)
+        {
+            MessageBox.Show("A kijelentkezés sikertelen!", "Étterem manager", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+        }
+
+        private void ViewModel_LogoutSuccess(object sender, EventArgs e)
+        {
+            if (model.IsUserLoggedIn)
+            {
+                model.LogoutAsync();
+            }
+            loginView = new LoginWindow();
+            loginView.DataContext = loginViewModel;
+            loginView.Show();
+
+            mainView.Close();
         }
 
         private void ViewModel_ExitApplication(object sender, EventArgs e)

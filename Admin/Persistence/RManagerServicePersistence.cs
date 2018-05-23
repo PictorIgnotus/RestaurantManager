@@ -18,32 +18,6 @@ namespace Admin.Persistence
             client.BaseAddress = new Uri(baseAddress);
         }
 
-        public async Task<Boolean> LoginAsync(String userName, String userPassword)
-        {
-            try
-            {
-                HttpResponseMessage response = await client.GetAsync("api/account/login/" + userName + "/" + userPassword);
-                return response.IsSuccessStatusCode;
-            }
-            catch(Exception ex)
-            {
-                throw new PersistenceUnavailableException(ex);
-            }
-        }
-
-        public async Task<Boolean> LogoutAsync()
-        {
-            try
-            {
-                HttpResponseMessage response = await client.GetAsync("api/account/logout");
-                return !response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                throw new PersistenceUnavailableException(ex);
-            }
-        }
-
         public async Task<IEnumerable<ProductDTO>> ReadProductsAsync()
         {
             try
@@ -92,7 +66,7 @@ namespace Admin.Persistence
             try
             {
                 HttpResponseMessage response = await client.PostAsJsonAsync("api/products/", product);
-                product.Id = (await response.Content.ReadAsAsync<ShoppingCartItemDTO>()).Id;
+                product.Id = (await response.Content.ReadAsAsync<ProductDTO>()).Id;
                 return response.IsSuccessStatusCode;
             }
             catch(Exception ex)
@@ -109,6 +83,32 @@ namespace Admin.Persistence
                 return response.IsSuccessStatusCode;
             }
             catch(Exception ex)
+            {
+                throw new PersistenceUnavailableException(ex);
+            }
+        }
+
+        public async Task<Boolean> LoginAsync(String userName, String userPassword)
+        {
+            try
+            {
+                HttpResponseMessage response = await client.GetAsync("api/account/login/" + userName + "/" + userPassword);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                throw new PersistenceUnavailableException(ex);
+            }
+        }
+
+        public async Task<Boolean> LogoutAsync()
+        {
+            try
+            {
+                HttpResponseMessage response = await client.GetAsync("api/account/logout");
+                return !response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
             {
                 throw new PersistenceUnavailableException(ex);
             }
